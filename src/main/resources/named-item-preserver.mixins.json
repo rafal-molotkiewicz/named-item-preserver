@@ -3,7 +3,8 @@
 	"package": "pl.molot.nip.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-		"ExampleMixin"
+		"ItemEntityDespawnMixin",
+		"ItemEntityAgeAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

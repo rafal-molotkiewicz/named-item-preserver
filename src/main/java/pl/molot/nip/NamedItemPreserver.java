@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: CC0-1.0
+// SPDX-License-Identifier: LicenseRef-Charity
 
 package pl.molot.nip;
 
@@ -15,12 +15,10 @@ public class NamedItemPreserver implements ModInitializer {
 	// That way, it's clear which mod wrote info, warnings, and errors.
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-	@Override
-	public void onInitialize() {
-		// This code runs as soon as Minecraft is in a mod-load-ready state.
-		// However, some things (like resources) may still be uninitialized.
-		// Proceed with mild caution.
+    @Override
+    public void onInitialize() {
+        // true = allow despawn, false = prevent
 
-		LOGGER.info("Hello Fabric world!");
-	}
+        LOGGER.info("Named Item Preserver loaded: named items will not despawn.");
+    }
 }
