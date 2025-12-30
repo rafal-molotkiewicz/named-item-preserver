@@ -1,0 +1,41 @@
+{
+	"schemaVersion": 1,
+	"id": "named-item-preserver",
+	"version": "${version}",
+	"name": "Named Item Preserver",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/named-item-preserver/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"pl.molot.nip.NamedItemPreserver"
+		],
+		"client": [
+			"pl.molot.nip.NamedItemPreserverClient"
+		],
+		"fabric-datagen": [
+			"pl.molot.nip.NamedItemPreserverDataGenerator"
+		]
+	},
+	"mixins": [
+		"named-item-preserver.mixins.json",
+		{
+			"config": "named-item-preserver.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.18.4",
+		"minecraft": "~1.21.10",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}

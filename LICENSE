@@ -1,0 +1,39 @@
+This repository contains source code distributed under multiple licenses.
+
+------------------------------------------------------------
+
+1. Creative Commons Zero (CC0 1.0 Universal)
+
+Some files in this repository are licensed under Creative Commons Zero
+(CC0 1.0 Universal). These files are in the public domain and may be used
+for any purpose, including commercial use, without restriction.
+
+The full text of the CC0 1.0 Universal license is provided in:
+LICENSE-CC0
+
+------------------------------------------------------------
+
+2. Charity License
+
+All original code authored by Rafał Mołotkiewicz is licensed under the
+Molot Charity License. This license permits free use for private gameplay
+and non-commercial servers. Commercial use is permitted only subject to
+a good-faith donation to a registered charitable organization.
+
+The full text of this license is provided in:
+LICENSE-CHARITY
+
+------------------------------------------------------------
+
+3. File-Level Licensing
+
+Each source file in this repository specifies its applicable license
+via an SPDX license identifier in the file header.
+
+In the event of any conflict, the license stated in the individual file
+header takes precedence.
+
+------------------------------------------------------------
+
+This LICENSE file is a summary only and does not modify or override the
+terms of the individual licenses.
