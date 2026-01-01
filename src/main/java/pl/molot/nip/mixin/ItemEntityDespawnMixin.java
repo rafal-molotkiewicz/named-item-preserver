@@ -22,14 +22,15 @@ public abstract class ItemEntityDespawnMixin {
         method = "tick",
         at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ItemEntity;discard()V")
     )
-    private void nip$preventNamedItemDespawn(ItemEntity self, Operation original) {
+    private void nip$preventNamedItemDespawn(ItemEntity self, Operation<Void> original) {
         // ItemStack custom name is what you care about.
         if (NipUtil.isNamedItem(self)) {
             // Reset age so vanilla won't try every tick.
             NipItemEntity.resetDespawnAge(self);
-            NamedItemPreserver.LOGGER.info("Prevented despawn of {}", self.getStack().getName().getString());
+            NamedItemPreserver.LOGGER.debug("Prevented despawn of {}", NipUtil.getDisplayName(self));
             return; // prevent despawn
         }
+        
         original.call(self); // normal behavior
     }
 }
