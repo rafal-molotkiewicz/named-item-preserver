@@ -24,10 +24,10 @@ public abstract class ItemEntityDespawnMixin {
     )
     private void nip$preventNamedItemDespawn(ItemEntity self, Operation<Void> original) {
         // ItemStack custom name is what you care about.
-        if (NipUtil.isNamedItem(self)) {
+        if (NipUtil.isNamedItem(self.getStack())) {
             // Reset age so vanilla won't try every tick.
             NipItemEntity.resetDespawnAge(self);
-            NamedItemPreserver.LOGGER.debug("Prevented despawn of {}", NipUtil.getDisplayName(self));
+            NamedItemPreserver.LOGGER.debug("Prevented despawn of {}", NipUtil.getDisplayName(self.getStack()));
             return; // prevent despawn
         }
         

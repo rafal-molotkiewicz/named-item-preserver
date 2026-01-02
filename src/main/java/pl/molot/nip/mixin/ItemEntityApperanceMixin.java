@@ -33,8 +33,7 @@ public abstract class ItemEntityApperanceMixin {
         
         // Log at NORMAL level when a named item appears in the world
         if (NipUtil.isNamedItem(stack)) {
-            NamedItemPreserver.LOGGER.info("Named item dropped: {}", 
-                    NipUtil.formatItemLog(self));
+            NamedItemPreserver.LOGGER.info(NipUtil.droppedMessage(stack, self));
         }
     }
 }

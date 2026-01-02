@@ -4,6 +4,7 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 		"ItemEntityDespawnMixin",
+		"ItemEntityDestroyMixin",
 		"ItemEntityApperanceMixin",
 		"PlayerPickupMixin",
 		"MobPickupMixin",
