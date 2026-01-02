@@ -11,7 +11,7 @@ import pl.molot.nip.NamedItemPreserver;
 import pl.molot.nip.NipUtil;
 
 @Mixin(ItemEntity.class)
-public abstract class ItemEntityPickupMixin {
+public abstract class PlayerPickupMixin {
     /**
      * Log when a player picks up a named item.
      */
@@ -25,8 +25,7 @@ public abstract class ItemEntityPickupMixin {
         
         // Only log when the item was actually removed (picked up) to avoid duplicate messages
         if (NipUtil.isNamedItem(self) && self.isRemoved()) {
-            NipUtil.LogMessage msg = NipUtil.pickedUpMessage(self, player);
-            NamedItemPreserver.LOGGER.info(msg.format, msg.args);
+            NamedItemPreserver.LOGGER.info(NipUtil.pickedUpMessage(self.getStack(), player, self));
         }
     }
 }

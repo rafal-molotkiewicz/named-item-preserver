@@ -9,6 +9,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.registry.Registries;
 import pl.molot.nip.mixin.EntityWorldAccessor;
 
 public final class NipUtil {
@@ -25,7 +26,8 @@ public final class NipUtil {
     }
 
     /** Return formatted "x, y, z" for the entity's position. */
-    public static String getBlockPos(ItemEntity entity) {
+    public static String getBlockPos(Entity entity) {
+        if (entity == null) return "unknown";
         BlockPos pos = entity.getBlockPos();
         if (pos == null) return "unknown";
         return pos.getX() + ", " + pos.getY() + ", " + pos.getZ();
@@ -47,17 +49,40 @@ public final class NipUtil {
             case "the_nether": return "Nether";
             case "the_end": return "End";
             default:
-                // Replace underscores and capitalize words
-                String[] parts = path.split("_");
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < parts.length; i++) {
-                    if (parts[i].isEmpty()) continue;
-                    String p = parts[i];
-                    sb.append(Character.toUpperCase(p.charAt(0))).append(p.substring(1));
-                    if (i < parts.length - 1) sb.append(' ');
-                }
-                return sb.toString();
+                return humanizePath(path);
         }
+    }
+
+    /**
+     * Return a human-friendly name for an entity.
+     * Uses the translated display name when available, otherwise falls back to the registry path.
+     */
+    public static String getEntityDisplayName(Entity entity) {
+        if (entity == null) return "Unknown";
+
+        String display = entity.getDisplayName().getString();
+        if (display != null && !display.isBlank() && !display.contains(".")) {
+            return display;
+        }
+
+        Identifier id = Registries.ENTITY_TYPE.getId(entity.getType());
+        if (id != null) {
+            return humanizePath(id.getPath());
+        }
+
+        return (display == null || display.isBlank()) ? "Unknown" : display;
+    }
+
+    private static String humanizePath(String path) {
+        if (path == null || path.isBlank()) return "Unknown";
+        String[] parts = path.split("_");
+        StringBuilder sb = new StringBuilder();
+        for (String part : parts) {
+            if (part.isEmpty()) continue;
+            if (sb.length() > 0) sb.append(' ');
+            sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+        }
+        return sb.length() == 0 ? "Unknown" : sb.toString();
     }
 
     /** Return dimension name for an entity by using EntityWorldAccessor internally. */
@@ -90,50 +115,25 @@ public final class NipUtil {
         } else {
             kind = "entity";
         }
-        return "by " + kind + " " + picker.getName().getString();
+        return "by " + kind + " " + getEntityDisplayName(picker);
     }
 
     /**
-     * Format an item for log output: "<name> at x, y, z in Dimension" using logger placeholders.
+     * Standard pickup message.
+     * - `stack` is the item being picked up (pass a pre-pickup copy if needed)
+     * - `picker` is who picked it up
+     * - `location` provides position + dimension context (picker or item entity)
      */
-    public static LogMessage itemLogMessage(ItemEntity entity) {
-        if (entity == null) return new LogMessage("unknown");
-        return new LogMessage("{} at {} in {}", new Object[]{getDisplayName(entity), getBlockPos(entity), getDimensionName(entity)});
-    }
-
-    public static LogMessage pickedUpMessage(ItemEntity entity, Entity picker) {
-        if (entity == null) return new LogMessage("unknown");
-        return new LogMessage("{} {} at {} in {}", new Object[]{getDisplayName(entity), getPickerDescriptor(picker), getBlockPos(entity), getDimensionName(entity)});
-    }
-
-    public static LogMessage destroyedMessage(ItemEntity entity) {
-        if (entity == null) return new LogMessage("unknown");
-        return new LogMessage("{} at {} in {}", new Object[]{getDisplayName(entity), getBlockPos(entity), getDimensionName(entity)});
+    public static String pickedUpMessage(ItemStack stack, Entity picker, Entity location) {
+        String itemName = getDisplayName(stack);
+        return "Named item " + itemName + " taken " + getPickerDescriptor(picker)
+            + " at " + getBlockPos(location)
+            + " in " + getDimensionName(location == null ? null : location.getEntityWorld());
     }
 
     /** Backwards-compatible textual formatter returning single string */
     public static String formatItemLog(ItemEntity entity) {
         if (entity == null) return "unknown";
         return getDisplayName(entity) + " at " + getBlockPos(entity) + " in " + getDimensionName(entity);
-    }
-
-    public static final class LogMessage {
-        public final String format;
-        public final Object[] args;
-
-        public LogMessage(String format, Object[] args) {
-            this.format = format;
-            this.args = args;
-        }
-
-        public LogMessage(String single) {
-            this.format = single;
-            this.args = new Object[0];
-        }
-
-        @Override
-        public String toString() {
-            return format;
-        }
     }
 }

@@ -5,11 +5,12 @@
 	"mixins": [
 		"ItemEntityDespawnMixin",
 		"ItemEntityApperanceMixin",
-		"ItemEntityPickupMixin",
+		"PlayerPickupMixin",
+		"MobPickupMixin",
 		"ItemEntityAgeAccessor",
 		"EntityWorldAccessor"
 	],
-	"injectors": {
+	"injectors": { 
 		"defaultRequire": 1
 	},
 	"overwrites": {
