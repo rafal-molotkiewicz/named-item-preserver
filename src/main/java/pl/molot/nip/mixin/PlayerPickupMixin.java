@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import pl.molot.nip.NamedItemPreserver;
+import pl.molot.nip.ItemEntityRemovalLogState;
 import pl.molot.nip.NipUtil;
 
 @Mixin(ItemEntity.class)
@@ -30,6 +31,10 @@ public abstract class PlayerPickupMixin {
         ItemStack current = self.getStack();
         this.nip$pickupStackSnapshot = current == null ? null : current.copy();
         this.nip$pickupWasNamed = this.nip$pickupStackSnapshot != null && NipUtil.isNamedItem(this.nip$pickupStackSnapshot);
+
+        if (this.nip$pickupWasNamed && (Object) self instanceof ItemEntityRemovalLogState logState) {
+            logState.nip$setSpecificRemovalPending(true);
+        }
     }
 
     /**
@@ -44,8 +49,16 @@ public abstract class PlayerPickupMixin {
         ItemEntity self = (ItemEntity)(Object)this;
         
         // Only log when the item was actually removed (picked up) to avoid duplicate messages
-        if (this.nip$pickupWasNamed && self.isRemoved()) {
+        if (this.nip$pickupWasNamed && self.isRemoved()
+            && !((Object) self instanceof ItemEntityRemovalLogState logState && logState.nip$wasRemovalLogged())) {
             NamedItemPreserver.LOGGER.info(NipUtil.pickedUpMessage(this.nip$pickupStackSnapshot, player, self));
+            if ((Object) self instanceof ItemEntityRemovalLogState logState) {
+                logState.nip$markRemovalLogged();
+            }
+        }
+
+        if ((Object) self instanceof ItemEntityRemovalLogState logState) {
+            logState.nip$setSpecificRemovalPending(false);
         }
 
         this.nip$pickupStackSnapshot = null;

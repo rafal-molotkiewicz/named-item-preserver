@@ -10,6 +10,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.registry.Registries;
+import net.minecraft.entity.Entity.RemovalReason;
+import net.minecraft.util.math.BlockPos;
 
 public final class NipUtil {
     private NipUtil() {}
@@ -160,6 +162,19 @@ public final class NipUtil {
             + " in " + getDimensionName(location == null ? null : location.getEntityWorld());
     }
 
+    public static String removedMessage(ItemStack stack, RemovalReason reason, Entity location) {
+        String itemDesc = describeItem(stack);
+        return itemDesc + " was removed (" + formatRemovalReason(reason) + ")"
+            + " at " + getBlockPos(location)
+            + " in " + getDimensionName(location == null ? null : location.getEntityWorld());
+    }
+
+    public static String transcendedMessage(ItemStack stack, World fromWorld, BlockPos fromPos, World toWorld, BlockPos toPos) {
+        String itemDesc = describeItem(stack);
+        return itemDesc + " transcended from " + getDimensionName(fromWorld) + " " + formatBlockPos(fromPos)
+            + " to " + getDimensionName(toWorld) + " " + formatBlockPos(toPos);
+    }
+
     //endregion
 
     //region Internal Helpers
@@ -190,6 +205,16 @@ public final class NipUtil {
             // Fall through
         }
         return source.toString();
+    }
+
+    private static String formatRemovalReason(RemovalReason reason) {
+        if (reason == null) return "unknown";
+        return humanizePath(reason.name().toLowerCase());
+    }
+
+    private static String formatBlockPos(BlockPos pos) {
+        if (pos == null) return "unknown";
+        return pos.getX() + ", " + pos.getY() + ", " + pos.getZ();
     }
 
     //endregion

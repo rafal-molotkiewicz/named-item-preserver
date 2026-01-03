@@ -10,6 +10,7 @@ import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import pl.molot.nip.NamedItemPreserver;
+import pl.molot.nip.ItemEntityRemovalLogState;
 import pl.molot.nip.NipUtil;
 
 @Mixin(MobEntity.class)
@@ -27,10 +28,18 @@ public abstract class MobPickupMixin {
         ItemStack before = itemEntity.getStack().copy();
         boolean wasNamed = NipUtil.isNamedItem(before);
 
+        ItemEntityRemovalLogState logState = (Object) itemEntity instanceof ItemEntityRemovalLogState s ? s : null;
+        if (wasNamed && logState != null) {
+            logState.nip$setSpecificRemovalPending(true);
+        }
+
         original.call(self, world, itemEntity);
 
-        if (wasNamed && itemEntity.isRemoved()) {
+        if (wasNamed && itemEntity.isRemoved() && !(logState != null && logState.nip$wasRemovalLogged())) {
             NamedItemPreserver.LOGGER.info(NipUtil.pickedUpMessage(before, self, self));
+            if (logState != null) logState.nip$markRemovalLogged();
         }
+
+        if (logState != null) logState.nip$setSpecificRemovalPending(false);
     }
 }

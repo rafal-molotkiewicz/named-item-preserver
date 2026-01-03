@@ -11,6 +11,8 @@ import pl.molot.nip.NamedItemPreserver;
 import pl.molot.nip.NipUtil;
 import pl.molot.nip.config.ConfigManager;
 
+import java.util.Objects;
+
 @Mixin(ItemEntity.class)
 public abstract class ItemEntityApperanceMixin {
     /**
@@ -26,14 +28,21 @@ public abstract class ItemEntityApperanceMixin {
         
         // Show custom name above item if enabled in config        
         if (ConfigManager.get().displayItemName && NipUtil.isNamedItem(stack)) {
-            self.setCustomName(stack.getCustomName());
-            self.setCustomNameVisible(true);
-            NamedItemPreserver.LOGGER.debug("Enabled name display for {}", NipUtil.getDisplayName(stack));
-        }
-        
-        // Log at NORMAL level when a named item appears in the world
-        if (NipUtil.isNamedItem(stack)) {
-            NamedItemPreserver.LOGGER.info(NipUtil.droppedMessage(stack, self));
+            boolean changed = false;
+
+            if (!Objects.equals(self.getCustomName(), stack.getCustomName())) {
+                self.setCustomName(stack.getCustomName());
+                changed = true;
+            }
+
+            if (!self.isCustomNameVisible()) {
+                self.setCustomNameVisible(true);
+                changed = true;
+            }
+
+            if (changed) {
+                NamedItemPreserver.LOGGER.debug("Enabled name display for {}", NipUtil.getDisplayName(stack));
+            }
         }
     }
 }

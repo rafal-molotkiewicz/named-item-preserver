@@ -3,9 +3,13 @@
 	"package": "pl.molot.nip.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
+		"EntityDimensionChangeMixin",
+		"EntityOtherRemovalMixin",
+		"ItemEntityRemovalStateMixin",
 		"ItemEntityDespawnMixin",
 		"ItemEntityDestroyMixin",
 		"ItemEntityApperanceMixin",
+		"ItemEntitySpawnLogMixin",
 		"PlayerPickupMixin",
 		"MobPickupMixin",
 		"ItemEntityAgeAccessor",

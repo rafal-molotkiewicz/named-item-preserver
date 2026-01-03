@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import pl.molot.nip.NamedItemPreserver;
+import pl.molot.nip.ItemEntityRemovalLogState;
 import pl.molot.nip.NipUtil;
 
 @Mixin(ItemEntity.class)
@@ -31,6 +32,10 @@ public abstract class ItemEntityDestroyMixin {
         ItemStack current = self.getStack();
         this.nip$damageStackSnapshot = current == null ? null : current.copy();
         this.nip$damageWasNamed = this.nip$damageStackSnapshot != null && NipUtil.isNamedItem(this.nip$damageStackSnapshot);
+
+        if (this.nip$damageWasNamed && (Object) self instanceof ItemEntityRemovalLogState logState) {
+            logState.nip$setSpecificRemovalPending(true);
+        }
     }
 
     @Inject(
@@ -40,8 +45,16 @@ public abstract class ItemEntityDestroyMixin {
     private void nip$logNamedItemDestruction(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         ItemEntity self = (ItemEntity) (Object) this;
 
-        if (this.nip$damageWasNamed && self.isRemoved()) {
+        if (this.nip$damageWasNamed && self.isRemoved()
+            && !((Object) self instanceof ItemEntityRemovalLogState logState && logState.nip$wasRemovalLogged())) {
             NamedItemPreserver.LOGGER.info(NipUtil.destroyedMessage(this.nip$damageStackSnapshot, source, self));
+            if ((Object) self instanceof ItemEntityRemovalLogState logState) {
+                logState.nip$markRemovalLogged();
+            }
+        }
+
+        if ((Object) self instanceof ItemEntityRemovalLogState logState) {
+            logState.nip$setSpecificRemovalPending(false);
         }
 
         this.nip$damageStackSnapshot = null;
