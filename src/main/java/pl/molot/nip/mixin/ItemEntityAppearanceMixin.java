@@ -14,7 +14,7 @@ import pl.molot.nip.config.ConfigManager;
 import java.util.Objects;
 
 @Mixin(ItemEntity.class)
-public abstract class ItemEntityApperanceMixin {
+public abstract class ItemEntityAppearanceMixin {
     /**
      * When an ItemEntity's stack is set, if it has a custom name and displayItemName is enabled,
      * make the name visible above the item.

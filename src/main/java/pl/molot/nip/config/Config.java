@@ -7,6 +7,11 @@ public class Config {
     public Verbosity verbosity = Verbosity.NORMAL;
     public boolean displayItemName = false;
     public BroadcastTo broadcastTo = BroadcastTo.NONE;
+    /**
+     * If true, when a container-like item entity (e.g. shulker box, bundle) is destroyed via the damage path,
+     * spill named items out of unnamed containers before the item entity is discarded.
+     */
+    public boolean spillNamedContentsFromDestroyedContainerEntities = false;
 
     public enum Verbosity {
         IMPORTANT(0, "Important"),
@@ -39,6 +44,7 @@ public class Config {
                 "verbosity=" + verbosity.displayName +
                 ", displayItemName=" + displayItemName +
                 ", broadcastTo=" + broadcastTo +
+                ", spillNamedContentsFromDestroyedContainerEntities=" + spillNamedContentsFromDestroyedContainerEntities +
                 '}';
     }
 }

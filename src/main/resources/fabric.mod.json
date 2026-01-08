@@ -3,15 +3,15 @@
 	"id": "named-item-preserver",
 	"version": "${version}",
 	"name": "Named Item Preserver",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Prevents named items from despawning and logs their lifecycle. Spills named contents from unnamed containers. Server-side Fabric mod for Minecraft 1.21.10.",
 	"authors": [
-		"Me!"
+		"molot"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/molot-eu/named-item-preserver",
+		"sources": "https://github.com/molot-eu/named-item-preserver"
 	},
-	"license": "CC0-1.0",
+	"license": "Charity",
 	"icon": "assets/named-item-preserver/icon.png",
 	"environment": "*",
 	"entrypoints": {

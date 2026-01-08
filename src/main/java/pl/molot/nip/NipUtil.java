@@ -1,17 +1,16 @@
 // SPDX-License-Identifier: LicenseRef-Charity
 package pl.molot.nip;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.Entity.RemovalReason;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.util.Identifier;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.registry.Registries;
-import net.minecraft.entity.Entity.RemovalReason;
-import net.minecraft.util.math.BlockPos;
 
 public final class NipUtil {
     private NipUtil() {}
