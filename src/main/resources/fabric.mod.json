@@ -3,7 +3,7 @@
 	"id": "named-item-preserver",
 	"version": "${version}",
 	"name": "Named Item Preserver",
-	"description": "Prevents named items from despawning and logs their lifecycle. Spills named contents from unnamed containers. Server-side Fabric mod for Minecraft 1.21.10.",
+	"description": "Prevents named items from despawning and logs their lifecycle. Spills named contents from unnamed containers. Server-side Fabric mod for Minecraft 1.21.11.",
 	"authors": [
 		"molot"
 	],
@@ -34,7 +34,7 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.18.4",
-		"minecraft": "~1.21.10",
+		"minecraft": "~1.21.11",
 		"java": ">=21",
 		"fabric-api": "*"
 	}

@@ -2,6 +2,7 @@
 package pl.molot.nip.config;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import org.slf4j.Logger;
@@ -78,8 +79,22 @@ public class NipLogger {
 
         server.execute(() -> {
             Text text = Text.literal(message);
-            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-                if (!opsOnly || player.hasPermissionLevel(2)) {
+            var playerManager = server.getPlayerManager();
+            var opList = playerManager.getOpList();
+            
+            for (ServerPlayerEntity player : playerManager.getPlayerList()) {
+                // Check if player is in ops list by comparing player name with op entry name
+                boolean isOp = false;
+                String playerName = player.getName().getString();
+                
+                for (var opEntry : opList.values()) {
+                    if (opEntry.getKey().name().equals(playerName)) {
+                        isOp = true;
+                        break;
+                    }
+                }
+                
+                if (!opsOnly || isOp) {
                     player.sendMessage(text, false);
                 }
             }
