@@ -110,7 +110,6 @@ public final class NipEntityHeldItems {
         if (entity == null) return null;
         
         Class<?> cls = entity.getClass();
-        if (cls == null) return null;
         
         Method cached = GET_INVENTORY_CACHE.get(cls);
         if (cached == null) {

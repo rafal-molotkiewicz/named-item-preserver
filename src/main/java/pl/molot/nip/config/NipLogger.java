@@ -3,7 +3,6 @@ package pl.molot.nip.config;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerConfigEntry;
-import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import org.slf4j.Logger;
