@@ -1,7 +1,11 @@
-<!--
-  Bug report template for Named Item Preserver
-  Please keep reports focused, reproducible, and include environment details.
--->
+---
+name: Bug report
+about: Create a report to help us improve
+title: "[BUG] "
+labels: ''
+assignees: rafal-molotkiewicz
+
+---
 
 **Short description**
 A one-line summary of the bug.
