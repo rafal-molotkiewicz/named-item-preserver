@@ -1,0 +1,1 @@
+D:/dev/named-item-preserver/LICENSE-CHARITY
