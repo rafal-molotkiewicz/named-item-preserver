@@ -3,7 +3,7 @@ name: Feature request
 about: Suggest a new feature for Named Item Preserver itself (no other mods required)
 title: "[FEATURE] "
 labels: ''
-assignees: ''
+assignees: rafal-molotkiewicz
 
 ---
 
