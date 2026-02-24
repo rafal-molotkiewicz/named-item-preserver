@@ -76,7 +76,7 @@ public final class NipContainerContents {
                 }
             }
             if (bundleChanged) {
-                containerStack.set(DataComponentTypes.BUNDLE_CONTENTS, new BundleContentsComponent(kept));
+                containerStack.<BundleContentsComponent>set(DataComponentTypes.BUNDLE_CONTENTS, new BundleContentsComponent(kept));
             }
         }
     }

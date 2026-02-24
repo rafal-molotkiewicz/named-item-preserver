@@ -71,17 +71,17 @@ public final class NipUtil {
         }
 
         Identifier id = Registries.ENTITY_TYPE.getId(entity.getType());
-        if (id != null) {
-            return humanizePath(id.getPath());
-        }
-
-        return (display == null || display.isBlank()) ? "Unknown" : display;
+        return humanizePath(id.getPath());
     }
 
     /** Return safe display name for an ItemStack. */
     public static String getDisplayName(ItemStack stack) {
         if (stack == null) return "unknown";
-        return stack.getCustomName() != null ? stack.getCustomName().getString() : stack.getName().getString();
+        var customName = stack.getCustomName();
+        if (customName != null) {
+            return customName.getString();
+        }
+        return stack.getName().getString();
     }
 
     /** Return the translated base item type name (e.g. "Diamond Sword"), ignoring custom names. */
@@ -103,10 +103,11 @@ public final class NipUtil {
     public static String describeItem(ItemStack stack) {
         if (stack == null) return "unknown";
         String typeName = getItemTypeName(stack);
-        if (stack.getCustomName() == null) {
+        var customName = stack.getCustomName();
+        if (customName == null) {
             return typeName;
         }
-        String custom = stack.getCustomName().getString();
+        String custom = customName.getString();
         if (custom == null || custom.isBlank()) {
             return typeName;
         }
