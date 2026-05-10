@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: LicenseRef-Charity
 package pl.molot.nip.mixin;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,7 +23,7 @@ public abstract class EntityOtherRemovalMixin {
     private boolean nip$removeWasNamed;
 
     @Inject(
-        method = "setRemoved(Lnet/minecraft/entity/Entity$RemovalReason;)V",
+        method = "setRemoved(Lnet/minecraft/world/entity/Entity$RemovalReason;)V",
         at = @At("HEAD")
     )
     private void nip$snapshotBeforeRemoval(Entity.RemovalReason reason, CallbackInfo ci) {
@@ -42,13 +42,13 @@ public abstract class EntityOtherRemovalMixin {
             return;
         }
 
-        ItemStack current = itemEntity.getStack();
+        ItemStack current = itemEntity.getItem();
         this.nip$removeStackSnapshot = current == null ? null : current.copy();
         this.nip$removeWasNamed = this.nip$removeStackSnapshot != null && NipUtil.isNamedItem(this.nip$removeStackSnapshot);
     }
 
     @Inject(
-        method = "setRemoved(Lnet/minecraft/entity/Entity$RemovalReason;)V",
+        method = "setRemoved(Lnet/minecraft/world/entity/Entity$RemovalReason;)V",
         at = @At("TAIL")
     )
     private void nip$logOtherRemoval(Entity.RemovalReason reason, CallbackInfo ci) {

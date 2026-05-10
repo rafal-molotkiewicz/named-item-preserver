@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: LicenseRef-Charity
 package pl.molot.nip.mixin;
 
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -20,7 +20,7 @@ public abstract class ItemEntityAppearanceMixin {
      * make the name visible above the item.
      */
     @Inject(
-        method = "setStack",
+        method = "setItem",
         at = @At("TAIL")
     )
     private void nip$showNameIfEnabled(ItemStack stack, CallbackInfo ci) {

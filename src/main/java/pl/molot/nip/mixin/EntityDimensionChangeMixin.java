@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: LicenseRef-Charity
 package pl.molot.nip.mixin;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.TeleportTarget;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.portal.TeleportTransition;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,28 +29,28 @@ public abstract class EntityDimensionChangeMixin {
     private boolean nip$dimWasNamed;
 
     @Unique
-    private ServerWorld nip$fromWorldSnapshot;
+    private ServerLevel nip$fromWorldSnapshot;
 
     @Unique
     private BlockPos nip$fromPosSnapshot;
 
     @Inject(
-        method = "teleportCrossDimension(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/entity/Entity;",
+        method = "teleportCrossDimension(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/portal/TeleportTransition;)Lnet/minecraft/world/entity/Entity;",
         at = @At("HEAD")
     )
-    private void nip$snapshotBeforeCrossDimension(ServerWorld fromWorld, ServerWorld toWorld, TeleportTarget target, CallbackInfoReturnable<Entity> cir) {
+    private void nip$snapshotBeforeCrossDimension(ServerLevel fromWorld, ServerLevel toWorld, TeleportTransition target, CallbackInfoReturnable<Entity> cir) {
         Entity self = (Entity) (Object) this;
         if (!(self instanceof ItemEntity itemEntity)) {
             return;
         }
 
-        ItemStack current = itemEntity.getStack();
+        ItemStack current = itemEntity.getItem();
         this.nip$dimStackSnapshot = current == null ? null : current.copy();
         this.nip$dimWasNamed = this.nip$dimStackSnapshot != null && NipUtil.isNamedItem(this.nip$dimStackSnapshot);
 
         if (this.nip$dimWasNamed) {
             this.nip$fromWorldSnapshot = fromWorld;
-            this.nip$fromPosSnapshot = itemEntity.getBlockPos();
+            this.nip$fromPosSnapshot = itemEntity.blockPosition();
         } else {
             this.nip$fromWorldSnapshot = null;
             this.nip$fromPosSnapshot = null;
@@ -58,10 +58,10 @@ public abstract class EntityDimensionChangeMixin {
     }
 
     @Inject(
-        method = "teleportCrossDimension(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/entity/Entity;",
+        method = "teleportCrossDimension(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/portal/TeleportTransition;)Lnet/minecraft/world/entity/Entity;",
         at = @At("RETURN")
     )
-    private void nip$logNamedItemCrossDimension(ServerWorld fromWorld, ServerWorld toWorld, TeleportTarget target, CallbackInfoReturnable<Entity> cir) {
+    private void nip$logNamedItemCrossDimension(ServerLevel fromWorld, ServerLevel toWorld, TeleportTransition target, CallbackInfoReturnable<Entity> cir) {
         if (!this.nip$dimWasNamed) {
             this.nip$dimStackSnapshot = null;
             return;
@@ -71,7 +71,7 @@ public abstract class EntityDimensionChangeMixin {
 
         Entity result = cir.getReturnValue();
 
-        BlockPos toPos = result != null ? result.getBlockPos() : null;
+        BlockPos toPos = result != null ? result.blockPosition() : null;
 
         if (result instanceof ItemEntity toItem && ConfigManager.get().displayItemName) {
             // Ensure the destination entity keeps showing the name if that setting is enabled.
@@ -89,7 +89,7 @@ public abstract class EntityDimensionChangeMixin {
                 this.nip$dimStackSnapshot,
                 this.nip$fromWorldSnapshot != null ? this.nip$fromWorldSnapshot : fromWorld,
                 this.nip$fromPosSnapshot,
-                result != null ? result.getEntityWorld() : toWorld,
+                result != null ? result.level() : toWorld,
                 toPos
             )
         );

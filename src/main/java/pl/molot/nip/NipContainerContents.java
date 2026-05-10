@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: LicenseRef-Charity
 package pl.molot.nip;
 
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.BundleContentsComponent;
-import net.minecraft.component.type.ContainerComponent;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.BundleContents;
+import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,9 +44,9 @@ public final class NipContainerContents {
         boolean changed = false;
 
         // Generic container component.
-        ContainerComponent container = containerStack.get(DataComponentTypes.CONTAINER);
-        if (container != null && container != ContainerComponent.DEFAULT) {
-            List<ItemStack> all = container.stream().map(s -> s == null ? ItemStack.EMPTY : s.copy()).toList();
+        ItemContainerContents container = containerStack.get(DataComponents.CONTAINER);
+        if (container != null && !container.equals(ItemContainerContents.EMPTY)) {
+            List<ItemStack> all = container.allItemsCopyStream().toList();
             List<ItemStack> mutated = new ArrayList<>(all.size());
             for (ItemStack nested : all) {
                 if (NipUtil.isNamedItem(nested)) {
@@ -57,33 +58,34 @@ public final class NipContainerContents {
                 }
             }
             if (changed) {
-                containerStack.set(DataComponentTypes.CONTAINER, ContainerComponent.fromStacks(mutated));
+                containerStack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(mutated));
             }
         }
 
         // Bundle component.
-        BundleContentsComponent bundle = containerStack.get(DataComponentTypes.BUNDLE_CONTENTS);
+        BundleContents bundle = containerStack.get(DataComponents.BUNDLE_CONTENTS);
         if (bundle != null && !bundle.isEmpty()) {
-            List<ItemStack> kept = new ArrayList<>();
+            List<ItemStackTemplate> kept = new ArrayList<>();
             boolean bundleChanged = false;
-            for (ItemStack nested : bundle.iterateCopy()) {
+            for (ItemStackTemplate template : bundle.items()) {
+                ItemStack nested = template.create();
                 if (nested == null || nested.isEmpty()) continue;
                 if (NipUtil.isNamedItem(nested)) {
-                    dropper.accept(nested);
+                    dropper.accept(nested.copy());
                     bundleChanged = true;
                 } else {
-                    kept.add(nested);
+                    kept.add(template);
                 }
             }
             if (bundleChanged) {
-                containerStack.<BundleContentsComponent>set(DataComponentTypes.BUNDLE_CONTENTS, new BundleContentsComponent(kept));
+                containerStack.set(DataComponents.BUNDLE_CONTENTS, new BundleContents(kept));
             }
         }
     }
 
     /**
      * Returns copies of all named (custom-name) item stacks contained within the provided container stack.
-     * Supports the generic {@link DataComponentTypes#CONTAINER} and {@link DataComponentTypes#BUNDLE_CONTENTS}
+     * Supports the generic {@link DataComponents#CONTAINER} and {@link DataComponents#BUNDLE_CONTENTS}
      * components.
      */
     public static Iterable<ItemStack> iterateNamedContentsCopy(ItemStack containerStack) {
@@ -91,18 +93,19 @@ public final class NipContainerContents {
 
         List<ItemStack> result = new ArrayList<>();
 
-        ContainerComponent container = containerStack.get(DataComponentTypes.CONTAINER);
-        if (container != null && container != ContainerComponent.DEFAULT) {
-            for (ItemStack nested : container.iterateNonEmptyCopy()) {
+        ItemContainerContents container = containerStack.get(DataComponents.CONTAINER);
+        if (container != null && !container.equals(ItemContainerContents.EMPTY)) {
+            container.nonEmptyItemCopyStream().forEach(nested -> {
                 if (NipUtil.isNamedItem(nested)) {
                     result.add(nested);
                 }
-            }
+            });
         }
 
-        BundleContentsComponent bundle = containerStack.get(DataComponentTypes.BUNDLE_CONTENTS);
+        BundleContents bundle = containerStack.get(DataComponents.BUNDLE_CONTENTS);
         if (bundle != null && !bundle.isEmpty()) {
-            for (ItemStack nested : bundle.iterateCopy()) {
+            for (ItemStackTemplate template : bundle.items()) {
+                ItemStack nested = template.create();
                 if (nested == null || nested.isEmpty()) continue;
                 if (NipUtil.isNamedItem(nested)) {
                     result.add(nested);
@@ -119,17 +122,17 @@ public final class NipContainerContents {
      * This strips the named stacks from the container (for unnamed containers) to avoid duplication
      * if some other code later also drops/reads the container contents.
      */
-    public static void dropNamedContents(ServerWorld world, ItemEntity containerEntity) {
+    public static void dropNamedContents(ServerLevel world, ItemEntity containerEntity) {
         if (world == null || containerEntity == null) return;
 
-        ItemStack containerStack = containerEntity.getStack();
+        ItemStack containerStack = containerEntity.getItem();
         if (containerStack == null || containerStack.isEmpty()) return;
 
         spillAndStripNamedContents(
             containerStack,
             named -> {
                 if (named == null || named.isEmpty()) return;
-                containerEntity.dropStack(world, named.copy());
+                containerEntity.spawnAtLocation(world, named.copy());
             }
         );
     }

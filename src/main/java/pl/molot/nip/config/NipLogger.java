@@ -2,9 +2,9 @@
 package pl.molot.nip.config;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerConfigEntry;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.server.players.NameAndId;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
 import org.slf4j.Logger;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
@@ -78,15 +78,15 @@ public class NipLogger {
         if (server == null) return;
 
         server.execute(() -> {
-            Text text = Text.literal(message);
-            var playerManager = server.getPlayerManager();
+            Component text = Component.literal(message);
+            var playerManager = server.getPlayerList();
             
-            for (ServerPlayerEntity player : playerManager.getPlayerList()) {
-                // Build a PlayerConfigEntry from the player's GameProfile and ask PlayerManager
-                boolean isOp = playerManager.isOperator(new PlayerConfigEntry(player.getGameProfile()));
+            for (ServerPlayer player : playerManager.getPlayers()) {
+                // Check op using NameAndId from GameProfile
+                boolean isOp = playerManager.isOp(new NameAndId(player.getGameProfile()));
                 
                 if (!opsOnly || isOp) {
-                    player.sendMessage(text, false);
+                    player.sendSystemMessage(text);
                 }
             }
         });

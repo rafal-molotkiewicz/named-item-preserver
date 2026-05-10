@@ -3,8 +3,8 @@ package pl.molot.nip.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.server.level.ServerLevel;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import pl.molot.nip.NipEntityHeldItems;
@@ -14,16 +14,16 @@ import pl.molot.nip.NipEntityHeldItems;
  * This is intentionally scoped to the despawn path (MobEntity#checkDespawn), so it does
  * not trigger for CHANGED_DIMENSION, chunk unload, etc.
  */
-@Mixin(MobEntity.class)
+@Mixin(Mob.class)
 public abstract class MobEntityDespawnDropNamedItemsMixin {
 
     @WrapOperation(
         method = "checkDespawn",
-        at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/mob/MobEntity;discard()V")
+        at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Mob;discard()V")
     )
-    private void nip$dropNamedItemsOnDespawn(MobEntity self, Operation<Void> original) {
-        if (self.getEntityWorld() instanceof ServerWorld serverWorld) {
-            NipEntityHeldItems.dropPreservedItemsOnDespawn(serverWorld, self);
+    private void nip$dropNamedItemsOnDespawn(Mob self, Operation<Void> original) {
+        if (self.level() instanceof ServerLevel serverLevel) {
+            NipEntityHeldItems.dropPreservedItemsOnDespawn(serverLevel, self);
         }
         original.call(self);
     }

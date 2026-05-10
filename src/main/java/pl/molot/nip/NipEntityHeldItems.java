@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: LicenseRef-Charity
 package pl.molot.nip;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.server.level.ServerLevel;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -15,8 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Best-effort extraction of all ItemStacks an entity can "hold" in vanilla:
  * - LivingEntity equipment (hands + armor)
- * - Any entity implementing {@link Inventory}
- * - Entities exposing a no-arg getInventory() returning {@link Inventory}
+ * - Any entity implementing {@link Container}
+ * - Entities exposing a no-arg getInventory() returning {@link Container}
  *
  * Intended for despawn-time preservation logic (before discard()).
  */
@@ -36,23 +36,23 @@ public final class NipEntityHeldItems {
         }
     }
 
-    public static void dropPreservedItemsOnDespawn(ServerWorld world, Entity entity) {
+    public static void dropPreservedItemsOnDespawn(ServerLevel world, Entity entity) {
         if (world == null || entity == null) return;
 
         var dropper = (java.util.function.Consumer<ItemStack>) (named -> {
             if (named == null || named.isEmpty()) return;
-            entity.dropStack(world, named.copy());
+            entity.spawnAtLocation(world, named.copy());
         });
 
         // 1) LivingEntity equipment (covers hands, armor; includes fox mouth item, helmets, etc.).
         if (entity instanceof LivingEntity living) {
             for (EquipmentSlot slot : EquipmentSlot.values()) {
-                ItemStack stack = living.getEquippedStack(slot);
+                ItemStack stack = living.getItemBySlot(slot);
                 if (stack == null || stack.isEmpty()) continue;
 
                 if (NipUtil.isNamedItem(stack)) {
-                    entity.dropStack(world, stack.copy());
-                    living.equipStack(slot, ItemStack.EMPTY);
+                    entity.spawnAtLocation(world, stack.copy());
+                    living.setItemSlot(slot, ItemStack.EMPTY);
                     continue;
                 }
 
@@ -62,22 +62,22 @@ public final class NipEntityHeldItems {
         }
 
         // 2) Direct Inventory implementation (covers many storage entities).
-        if (entity instanceof Inventory inv) {
+        if (entity instanceof Container inv) {
             dropFromInventory(world, entity, inv, dropper);
             return;
         }
 
         // 3) getInventory() via reflection (covers villager/allay/horses-like cases depending on mapping).
-        Inventory reflected = tryGetInventory(entity);
+        Container reflected = tryGetInventory(entity);
         if (reflected != null) {
             dropFromInventory(world, entity, reflected, dropper);
         }
     }
 
-    private static void dropFromInventory(ServerWorld world, Entity entity, Inventory inv, java.util.function.Consumer<ItemStack> dropper) {
+    private static void dropFromInventory(ServerLevel world, Entity entity, Container inv, java.util.function.Consumer<ItemStack> dropper) {
         int size;
         try {
-            size = inv.size();
+            size = inv.getContainerSize();
         } catch (Throwable t) {
             return;
         }
@@ -85,7 +85,7 @@ public final class NipEntityHeldItems {
         for (int i = 0; i < size; i++) {
             ItemStack stack;
             try {
-                stack = inv.getStack(i);
+                stack = inv.getItem(i);
             } catch (Throwable t) {
                 continue;
             }
@@ -93,9 +93,9 @@ public final class NipEntityHeldItems {
             if (stack == null || stack.isEmpty()) continue;
 
             if (NipUtil.isNamedItem(stack)) {
-                entity.dropStack(world, stack.copy());
+                entity.spawnAtLocation(world, stack.copy());
                 try {
-                    inv.setStack(i, ItemStack.EMPTY);
+                    inv.setItem(i, ItemStack.EMPTY);
                 } catch (Throwable ignored) {
                     // Best-effort.
                 }
@@ -106,7 +106,7 @@ public final class NipEntityHeldItems {
         }
     }
 
-    private static Inventory tryGetInventory(Entity entity) {
+    private static Container tryGetInventory(Entity entity) {
         if (entity == null) return null;
         
         Class<?> cls = entity.getClass();
@@ -122,7 +122,7 @@ public final class NipEntityHeldItems {
 
         try {
             Object result = cached.invoke(entity);
-            return result instanceof Inventory inv ? inv : null;
+            return result instanceof Container inv ? inv : null;
         } catch (Throwable t) {
             return null;
         }
@@ -131,7 +131,7 @@ public final class NipEntityHeldItems {
     private static Method findGetInventory(Class<?> cls) {
         try {
             Method m = cls.getMethod("getInventory");
-            if (!Inventory.class.isAssignableFrom(m.getReturnType())) return null;
+            if (!Container.class.isAssignableFrom(m.getReturnType())) return null;
             return m;
         } catch (NoSuchMethodException ignored) {
             // Try declared method too.
@@ -141,7 +141,7 @@ public final class NipEntityHeldItems {
 
         try {
             Method m = cls.getDeclaredMethod("getInventory");
-            if (!Inventory.class.isAssignableFrom(m.getReturnType())) return null;
+            if (!Container.class.isAssignableFrom(m.getReturnType())) return null;
             m.setAccessible(true);
             return m;
         } catch (NoSuchMethodException ignored) {

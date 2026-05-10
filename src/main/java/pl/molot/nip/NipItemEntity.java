@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-Charity
 package pl.molot.nip;
 
-import net.minecraft.entity.ItemEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import pl.molot.nip.mixin.ItemEntityAgeAccessor;
 
 public final class NipItemEntity {

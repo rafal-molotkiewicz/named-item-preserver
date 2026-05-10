@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: LicenseRef-Charity
 package pl.molot.nip.mixin;
 
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,12 +23,12 @@ public abstract class PlayerPickupMixin {
     private boolean nip$pickupWasNamed;
 
     @Inject(
-        method = "onPlayerCollision",
+        method = "playerTouch",
         at = @At("HEAD")
     )
-    private void nip$snapshotBeforePlayerPickup(PlayerEntity player, CallbackInfo ci) {
+    private void nip$snapshotBeforePlayerPickup(Player player, CallbackInfo ci) {
         ItemEntity self = (ItemEntity) (Object) this;
-        ItemStack current = self.getStack();
+        ItemStack current = self.getItem();
         this.nip$pickupStackSnapshot = current == null ? null : current.copy();
         this.nip$pickupWasNamed = this.nip$pickupStackSnapshot != null && NipUtil.isNamedItem(this.nip$pickupStackSnapshot);
 
@@ -41,11 +41,11 @@ public abstract class PlayerPickupMixin {
      * Log when a player picks up a named item.
      */
     @Inject(
-        method = "onPlayerCollision",
+        method = "playerTouch",
         at = @At("TAIL"),
         cancellable = false
     )
-    private void nip$logNamedItemPickup(PlayerEntity player, CallbackInfo ci) {
+    private void nip$logNamedItemPickup(Player player, CallbackInfo ci) {
         ItemEntity self = (ItemEntity)(Object)this;
         
         // Only log when the item was actually removed (picked up) to avoid duplicate messages

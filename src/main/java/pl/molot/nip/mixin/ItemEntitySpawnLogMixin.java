@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: LicenseRef-Charity
 package pl.molot.nip.mixin;
 
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,10 +21,10 @@ import pl.molot.nip.NipUtil;
 public abstract class ItemEntitySpawnLogMixin {
 
     @Inject(
-        method = "<init>(Lnet/minecraft/world/World;DDDLnet/minecraft/item/ItemStack;)V",
+        method = "<init>(Lnet/minecraft/world/level/Level;DDDLnet/minecraft/world/item/ItemStack;)V",
         at = @At("TAIL")
     )
-    private void nip$logNamedItemSpawn(World world, double x, double y, double z, ItemStack stack, CallbackInfo ci) {
+    private void nip$logNamedItemSpawn(Level world, double x, double y, double z, ItemStack stack, CallbackInfo ci) {
         if (NipUtil.isNamedItem(stack)) {
             ItemEntity self = (ItemEntity) (Object) this;
             NamedItemPreserver.LOGGER.info(NipUtil.droppedMessage(stack, self));

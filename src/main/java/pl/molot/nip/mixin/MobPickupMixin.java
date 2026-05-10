@@ -3,29 +3,29 @@ package pl.molot.nip.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.server.level.ServerLevel;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import pl.molot.nip.NamedItemPreserver;
 import pl.molot.nip.ItemEntityRemovalLogState;
 import pl.molot.nip.NipUtil;
 
-@Mixin(MobEntity.class)
+@Mixin(Mob.class)
 public abstract class MobPickupMixin {
 
     @WrapOperation(
-        method = "tickMovement",
+        method = "aiStep",
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/entity/mob/MobEntity;loot(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/ItemEntity;)V"
+            target = "Lnet/minecraft/world/entity/Mob;pickUpItem(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/item/ItemEntity;)V"
         )
     )
-    private void nip$wrapMobLootCall(MobEntity self, ServerWorld world, ItemEntity itemEntity, Operation<Void> original) {
+    private void nip$wrapMobLootCall(Mob self, ServerLevel world, ItemEntity itemEntity, Operation<Void> original) {
 
-        ItemStack before = itemEntity.getStack().copy();
+        ItemStack before = itemEntity.getItem().copy();
         boolean wasNamed = NipUtil.isNamedItem(before);
 
         ItemEntityRemovalLogState logState = (Object) itemEntity instanceof ItemEntityRemovalLogState s ? s : null;

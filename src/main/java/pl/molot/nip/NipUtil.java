@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: LicenseRef-Charity
 package pl.molot.nip;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.Entity.RemovalReason;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Entity.RemovalReason;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 public final class NipUtil {
     private NipUtil() {}
@@ -29,7 +29,7 @@ public final class NipUtil {
     /** Return formatted "x, y, z" for the entity's position. */
     public static String getBlockPos(Entity entity) {
         if (entity == null) return "unknown";
-        BlockPos pos = entity.getBlockPos();
+        BlockPos pos = entity.blockPosition();
         if (pos == null) return "unknown";
         return pos.getX() + ", " + pos.getY() + ", " + pos.getZ();
     }
@@ -40,9 +40,9 @@ public final class NipUtil {
      * - minecraft:the_nether -> Nether
      * - minecraft:the_end -> End
      */
-    public static String getDimensionName(World world) {
+    public static String getDimensionName(Level world) {
         if (world == null) return "Unknown";
-        Identifier id = world.getRegistryKey().getValue();
+        Identifier id = world.dimension().identifier();
         if (id == null) return "Unknown";
         String path = id.getPath();
         switch (path) {
@@ -70,7 +70,7 @@ public final class NipUtil {
             return display;
         }
 
-        Identifier id = Registries.ENTITY_TYPE.getId(entity.getType());
+        Identifier id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
         return humanizePath(id.getPath());
     }
 
@@ -81,14 +81,14 @@ public final class NipUtil {
         if (customName != null) {
             return customName.getString();
         }
-        return stack.getName().getString();
+        return stack.getHoverName().getString();
     }
 
     /** Return the translated base item type name (e.g. "Diamond Sword"), ignoring custom names. */
     public static String getItemTypeName(ItemStack stack) {
         if (stack == null) return "unknown";
         try {
-            String name = stack.getItem().getName().getString();
+            String name = stack.getItemName().getString();
             return (name == null || name.isBlank()) ? "unknown" : name;
         } catch (Throwable ignored) {
             // Fallback: might include custom name in some cases, but better than nothing.
@@ -122,9 +122,9 @@ public final class NipUtil {
     public static String getPickerDescriptor(Entity picker) {
         if (picker == null) return "by unknown";
         String kind;
-        if (picker instanceof PlayerEntity) {
+        if (picker instanceof Player) {
             kind = "player";
-        } else if (picker instanceof MobEntity) {
+        } else if (picker instanceof Mob) {
             kind = "mob";
         } else {
             kind = "entity";
@@ -146,30 +146,30 @@ public final class NipUtil {
         String itemDesc = describeItem(stack);
         return itemDesc + " was taken " + getPickerDescriptor(picker)
             + " at " + getBlockPos(location)
-            + " in " + getDimensionName(location == null ? null : location.getEntityWorld());
+            + " in " + getDimensionName(location == null ? null : location.level());
     }
 
     public static String droppedMessage(ItemStack stack, Entity location) {
         String itemDesc = describeItem(stack);
         return itemDesc + " was dropped at " + getBlockPos(location)
-            + " in " + getDimensionName(location == null ? null : location.getEntityWorld());
+            + " in " + getDimensionName(location == null ? null : location.level());
     }
 
     public static String destroyedMessage(ItemStack stack, DamageSource source, Entity location) {
         String itemDesc = describeItem(stack);
         return itemDesc + " was destroyed by " + getDamageCause(source)
             + " at " + getBlockPos(location)
-            + " in " + getDimensionName(location == null ? null : location.getEntityWorld());
+            + " in " + getDimensionName(location == null ? null : location.level());
     }
 
     public static String removedMessage(ItemStack stack, RemovalReason reason, Entity location) {
         String itemDesc = describeItem(stack);
         return itemDesc + " was removed (" + formatRemovalReason(reason) + ")"
             + " at " + getBlockPos(location)
-            + " in " + getDimensionName(location == null ? null : location.getEntityWorld());
+            + " in " + getDimensionName(location == null ? null : location.level());
     }
 
-    public static String transcendedMessage(ItemStack stack, World fromWorld, BlockPos fromPos, World toWorld, BlockPos toPos) {
+    public static String transcendedMessage(ItemStack stack, Level fromWorld, BlockPos fromPos, Level toWorld, BlockPos toPos) {
         String itemDesc = describeItem(stack);
         return itemDesc + " transcended from " + getDimensionName(fromWorld) + " " + formatBlockPos(fromPos)
             + " to " + getDimensionName(toWorld) + " " + formatBlockPos(toPos);

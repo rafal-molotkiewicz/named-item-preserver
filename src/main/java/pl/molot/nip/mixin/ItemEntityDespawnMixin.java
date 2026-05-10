@@ -3,8 +3,8 @@ package pl.molot.nip.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.server.level.ServerLevel;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import pl.molot.nip.NamedItemPreserver;
@@ -20,21 +20,21 @@ public abstract class ItemEntityDespawnMixin {
      */
     @WrapOperation(
         method = "tick",
-        at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ItemEntity;discard()V")
+        at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/item/ItemEntity;discard()V")
     )
     private void nip$preventNamedItemDespawn(ItemEntity self, Operation<Void> original) {
 
         // ItemStack custom name is what you care about.
-        if (NipUtil.isNamedItem(self.getStack())) {
+        if (NipUtil.isNamedItem(self.getItem())) {
             // Reset age so vanilla won't try every tick.
             NipItemEntity.resetDespawnAge(self);
-            NamedItemPreserver.LOGGER.debug("Prevented despawn of {}", NipUtil.getDisplayName(self.getStack()));
+            NamedItemPreserver.LOGGER.debug("Prevented despawn of {}", NipUtil.getDisplayName(self.getItem()));
             return; // prevent despawn
         }
 
-        if (self.getEntityWorld() instanceof ServerWorld serverWorld) {
+        if (self.level() instanceof ServerLevel serverLevel) {
             // If we're about to despawn the item entity, spill any named contents first.
-            NipContainerContents.dropNamedContents(serverWorld, self);
+            NipContainerContents.dropNamedContents(serverLevel, self);
         }
 
         original.call(self); // normal behavior
